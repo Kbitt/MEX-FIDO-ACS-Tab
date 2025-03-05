@@ -141,6 +141,8 @@ deploy:
         VITE_FUNC_NAME: ${{FUNC_NAME}}
         VITE_FUNC_ENDPOINT: ${{FUNC_ENDPOINT}}
         VITE_ACS_USER_ACCESS_TOKEN: ${{VITE_ACS_USER_ACCESS_TOKEN}}
+        VITE_ACS_ENDPOINT: https://acs-fido.unitedstates.communication.azure.com
+        VITE_COGNITIVE_ENDPOINT: https://call-ai-service.cognitiveservices.azure.com
 
   # Generate runtime environment variables for backend
   - uses: file/createOrUpdateEnvironmentFile
