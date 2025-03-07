@@ -1,20 +1,17 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Welcome } from "./sample/Welcome";
-import { TeamsFxContext } from "./Context";
-import config from "./sample/lib/config";
-import { app, meeting } from "@microsoft/teams-js";
-import { useTeamsAppContext } from "./TeamsAppContext";
-import { joinCall } from "./join-call";
-import { Button } from "@fluentui/react-components";
 import {
   Call,
   Features,
   TeamsCaptions,
   TeamsCaptionsInfo,
 } from "@azure/communication-calling";
+import { Button } from "@fluentui/react-components";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Layout } from "./Layout";
+import { joinCall } from "./join-call";
 
-const showFunction = Boolean(config.apiName);
+type CaptionInfo = TeamsCaptionsInfo & {
+  intent?: string;
+};
 
 export const CallPage: React.FC<{
   themeString?: string;
@@ -23,7 +20,39 @@ export const CallPage: React.FC<{
 }> = ({ joinUrl, topSlot }) => {
   const [call, setCall] = useState<Call>();
   const [isMuted, setIsMuted] = useState(false);
-  const [captions, setCaptions] = useState<TeamsCaptionsInfo[]>([]);
+  const [captions, setCaptions] = useState<CaptionInfo[]>([]);
+  const fetchingIntentsSet = useRef(new Set<number>());
+
+  useEffect(() => {
+    const index = captions.length - 1;
+    if (
+      captions[index] &&
+      captions[index].resultType === "Final" &&
+      !captions[index].intent &&
+      !fetchingIntentsSet.current.has(index)
+    ) {
+      fetchingIntentsSet.current.add(index);
+      setCaptions((value) => {
+        value[index].intent = "...processing...";
+        return value.slice();
+      });
+      fetch("http://localhost:8081/intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: captions[index].captionText }),
+      })
+        .then((res) => res.json())
+        .then(({ intent }) => {
+          setCaptions((value) => {
+            value[index].intent = intent;
+            return value.slice();
+          });
+          fetchingIntentsSet.current.delete(index);
+        });
+    }
+  }, [captions, captions.length]);
 
   const internalSetCall = useCallback((call: Call | undefined) => {
     console.log("internalSetCall", call);
@@ -65,7 +94,6 @@ export const CallPage: React.FC<{
             });
         }
       });
-    } else {
     }
   }, []);
 
@@ -106,14 +134,39 @@ export const CallPage: React.FC<{
       {call && <Button onClick={hangUp}>Hang up</Button>}
 
       {call && (
-        <ul>
-          {captions.map((data, i) => (
-            <li key={`caption-${data.resultType}-${i}`}>
-              {data.speaker.displayName}: {data.captionText}
-              {data.resultType !== "Final" && "..."}
-            </li>
-          ))}
-        </ul>
+        <table
+          style={{
+            color: "white",
+            border: "1px solid white",
+            borderCollapse: "collapse",
+          }}
+        >
+          <tbody>
+            {captions.map((data, i) => (
+              <tr key={`caption-${data.resultType}-${i}`}>
+                <td
+                  style={{
+                    maxWidth: "400px",
+                    border: "1px solid white",
+                    padding: "8px",
+                  }}
+                >
+                  {data.speaker.displayName}: {data.captionText}
+                  {data.resultType !== "Final" && "..."}
+                </td>
+                <td
+                  style={{
+                    maxWidth: "400px",
+                    border: "1px solid white",
+                    padding: "8px",
+                  }}
+                >
+                  {data.intent && <strong>Intent: {data.intent}</strong>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </Layout>
   );

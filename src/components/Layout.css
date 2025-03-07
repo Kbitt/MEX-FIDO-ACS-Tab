@@ -15,5 +15,9 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  overflow: hidden;
+  overflow: hidden auto;
+}
+
+button {
+  min-height: 32px;
 }
