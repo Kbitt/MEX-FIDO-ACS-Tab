@@ -1,0 +1,32 @@
+{
+  "name": "ACS-WS-Server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Kbitt/ACS-WS-Server.git",
+  "author": "Kellan Corbitt <kcorbitt@microsoft.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node -T src/index.ts"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.9",
+    "@types/ws": "^8.5.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@azure/communication-call-automation": "1.4.0-beta.1",
+    "@azure/communication-calling": "^1.33.2",
+    "@azure/communication-common": "^2.3.1",
+    "@azure/identity": "^4.7.0",
+    "@azure/openai": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "http": "^0.0.1-security",
+    "openai": "^4.86.1",
+    "ws": "^8.18.1"
+  }
+}
